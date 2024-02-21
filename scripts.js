@@ -25,9 +25,12 @@ const edges = [
 ];
 
 const faces = [
-    [0, 4, 7, 3, '#f007'], [1, 2, 6, 5],
-    [0, 1, 5, 4], [2, 3, 7, 6],
-    [0, 1, 2, 3], [4, 5, 6, 7]
+    [0, 4, 7, 3, 'rgba(255, 0, 0, 0.5)'],
+    [1, 2, 6, 5, 'rgba(255, 0, 255, 0.5)'],
+    [0, 1, 5, 4, 'rgba(255, 255, 0, 0.5)'],
+    [2, 3, 7, 6, 'rgba(0, 255, 0, 0.5)'],
+    [0, 1, 2, 3, 'rgba(0, 0, 255, 0.5)'],
+    [4, 5, 6, 7, 'rgba(0, 255, 255, 0.5)']
 ];
 
 // Initial rotation angles
@@ -42,18 +45,6 @@ function draw() {
     rotateX(angleX);
     rotateY(angleY);
 
-    // Draw edges
-    
-/*     ctx.beginPath();
-    for (const edge of edges) {
-        const start = project(vertices[edge[0]]);
-        const end = project(vertices[edge[1]]);
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
-    }
-    ctx.lineWidth = 5;
-    ctx.stroke(); */
-
     for (const face of faces) {
         const point0 = project(vertices[face[0]]);
         const point1 = project(vertices[face[1]]);
@@ -67,13 +58,19 @@ function draw() {
         ctx.lineTo(point3.x, point3.y);
         ctx.closePath();
 
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.fillStyle = face[4];
         ctx.fill();
-
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'black';
-        ctx.stroke();
     }
+
+    ctx.beginPath();
+    for (const edge of edges) {
+        const start = project(vertices[edge[0]]);
+        const end = project(vertices[edge[1]]);
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+    }
+    ctx.lineWidth = 2;
+    ctx.stroke();
 }
 
 function rotateX(angle) {
