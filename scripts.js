@@ -5,7 +5,21 @@ canvas.height = 400;
 
 var ctx = canvas.getContext('2d');
 
-// Cube vertices
+class PlayerPosition {
+    constructor (x, z, angle) {
+        this.x = x;
+        this.z = z;
+        this.angle = angle;
+    }
+    move(dx, dz, angle) {
+        this.x += dx;
+        this.z += dz;
+        this.angle += angle;
+    }
+}
+
+const player = new PlayerPosition(0,0,0);
+
 const vertices = [
     { x: -25, y: -25, z: -25 },
     { x: 25, y: -25, z: -25 },
@@ -17,7 +31,8 @@ const vertices = [
     { x: -25, y: 25, z: 25 }
 ];
 
-// Connect the vertices to form edges
+const projectedVertices = JSON.parse(JSON.stringify(vertices));
+
 const edges = [
     [0, 1], [1, 2], [2, 3], [3, 0],
     [4, 5], [5, 6], [6, 7], [7, 4],
@@ -33,23 +48,19 @@ const faces = [
     [4, 5, 6, 7, 'rgba(0, 255, 255, 0.5)']
 ];
 
-// Initial rotation angles
-let angleX = 0;
-let angleY = 0;
-
 function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Rotate the cube
-    rotateX(angleX);
-    rotateY(angleY);
+    rotateX(player.z);
+    rotateY(player.x);
 
     for (const face of faces) {
-        const point0 = project(vertices[face[0]]);
-        const point1 = project(vertices[face[1]]);
-        const point2 = project(vertices[face[2]]);
-        const point3 = project(vertices[face[3]]);
+        const point0 = project(projectedVertices[face[0]]);
+        const point1 = project(projectedVertices[face[1]]);
+        const point2 = project(projectedVertices[face[2]]);
+        const point3 = project(projectedVertices[face[3]]);
 
         ctx.beginPath();
         ctx.moveTo(point0.x, point0.y);
@@ -64,8 +75,8 @@ function draw() {
 
     ctx.beginPath();
     for (const edge of edges) {
-        const start = project(vertices[edge[0]]);
-        const end = project(vertices[edge[1]]);
+        const start = project(projectedVertices[edge[0]]);
+        const end = project(projectedVertices[edge[1]]);
         ctx.moveTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
     }
@@ -77,10 +88,10 @@ function rotateX(angle) {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
 
-    for (const vertex of vertices) {
-        const y = vertex.y;
-        vertex.y = cos * y - sin * vertex.z;
-        vertex.z = sin * y + cos * vertex.z;
+    for (let i = 0; i < vertices.length; i++) {
+        const y = vertices[i].y;
+        projectedVertices[i].y = cos * y - sin * vertices[i].z;
+        projectedVertices[i].z = sin * y + cos * vertices[i].z;
     }
 }
 
@@ -88,10 +99,10 @@ function rotateY(angle) {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
 
-    for (const vertex of vertices) {
-        const x = vertex.x;
-        vertex.x = cos * x + sin * vertex.z;
-        vertex.z = -sin * x + cos * vertex.z;
+    for (let i = 0; i < vertices.length; i++) {
+        const x = vertices[i].x;
+        projectedVertices[i].x = cos * x + sin * vertices[i].z;
+        projectedVertices[i].z = -sin * x + cos * vertices[i].z;
     }
 }
 
@@ -106,10 +117,35 @@ function project(vertex) {
 }
 
 function animate() {
-    angleX += 0.00002;
-    angleY += 0.00001;
     draw();
     requestAnimationFrame(animate);
 }
 
 animate();
+
+const playerSpeed = 0.1;
+
+function handleKeyPress(event) {
+    switch (event.key) {
+        case 'w':
+            player.move(0, -playerSpeed, 0);
+            break;
+        case 's':
+            player.move(0, playerSpeed, 0);
+            break;
+        case 'a':
+            player.move(-playerSpeed, 0, 0);
+            break;
+        case 'd':
+            player.move(playerSpeed, 0, 0);
+            break;
+        case 'ArrowLeft':
+            player.move(0, 0, -playerSpeed);
+            break;
+        case 'ArrowRight':
+            player.move(0, 0, playerSpeed);
+            break;
+    }
+}
+
+document.addEventListener('keydown', handleKeyPress);
